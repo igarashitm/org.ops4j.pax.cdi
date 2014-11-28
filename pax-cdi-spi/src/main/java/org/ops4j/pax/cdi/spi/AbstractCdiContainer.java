@@ -97,7 +97,14 @@ public abstract class AbstractCdiContainer implements CdiContainer {
         if (started) {
             log.info("Stopping CDI container for bundle {}", getBundle());
             BeanBundles.removeBundle(getContextClassLoader(), getBundle());
-            doStop();
+            ClassLoader origCl = Thread.currentThread().getContextClassLoader();
+            try {
+                Thread.currentThread().setContextClassLoader(getContextClassLoader());
+                doStop();
+            }
+            finally {
+                Thread.currentThread().setContextClassLoader(origCl);
+            }
             if (registration != null) {
                 try {
                     registration.unregister();
